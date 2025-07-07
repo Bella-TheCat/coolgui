@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>coolgui</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #2f3241;
+      color: #f0f0f0;
+      padding: 20px;
+      margin: 0;
+      transition: background-color 0.3s ease;
+    }
+
+    .buttons {
+      margin-bottom: 20px;
+    }
+
+    button {
+      background-color: #3b3e4c;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      margin-right: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      filter: brightness(0.9);
+    }
+
+    .screen {
+      display: none;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    webview {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    #colorPanel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1e1f2a;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 10px;
+      z-index: 999;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    #colorPanel label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: #ccc;
+    }
+
+    #colorPanel input[type="color"] {
+      width: 100%;
+      margin-bottom: 10px;
+      border: none;
+      height: 30px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="buttons" id="buttons">
+    <button onclick="switchScreen('home')">Home</button>
+    <button onclick="switchScreen('discord')">Discord</button>
+    <button onclick="switchScreen('browser')">Browser</button>
+    <button onclick="switchScreen('spotify')">Spotify</button>
+    <button onclick="switchScreen('terminal')">Terminal</button>
+  </div>
+
+  <div id="home" class="screen active">
+    <h1>Welcome</h1>
+    <p>This is your home screen. Select a section using the buttons above.</p>
+  </div>
+
+  <div id="discord" class="screen">
+    <webview
+      src="https://discord.com/app"
+      partition="persist:discord"
+      allowpopups
+      allowfullscreen
+      webpreferences="nativeWindowOpen=yes"
+    ></webview>
+  </div>
+
+  <div id="browser" class="screen">
+    <webview
+      src="https://duckduckgo.com"
+      partition="persist:browser"
+      allowpopups
+    ></webview>
+  </div>
+
+  <div id="spotify" class="screen">
+    <webview
+      src="https://open.spotify.com"
+      partition="persist:spotify"
+      allowpopups
+    ></webview>
+  </div>
+
+  <div id="terminal" class="screen">
+    <h1>Terminal coming soon (nodejs sucks)</h1>
+  </div>
+
+  <!-- Color Panel -->
+  <div id="colorPanel">
+    <label for="bgColor">Background</label>
+    <input type="color" id="bgColor" value="#2f3241">
+  </div>
+
+  <script>
+    function switchScreen(id) {
+      document.querySelectorAll('.screen').forEach(el => {
+        el.classList.remove('active');
+      });
+      document.getElementById(id).classList.add('active');
+    }
+
+    const bgColorPicker = document.getElementById('bgColor');
+
+    bgColorPicker.addEventListener('input', () => {
+      const bgColor = bgColorPicker.value;
+      document.body.style.backgroundColor = bgColor;
+
+      const btnColor = adjustColor(bgColor, -20); // Slightly darker than background
+      document.querySelectorAll('button').forEach(btn => {
+        btn.style.backgroundColor = btnColor;
+      });
+    });
+
+    // Utility: Adjust brightness of a hex color
+    function adjustColor(hex, amount) {
+      let col = hex.startsWith('#') ? hex.slice(1) : hex;
+      if (col.length === 3) col = col.split('').map(c => c + c).join('');
+
+      const num = parseInt(col, 16);
+      let r = (num >> 16) + amount;
+      let g = ((num >> 8) & 0x00FF) + amount;
+      let b = (num & 0x0000FF) + amount;
+
+      r = Math.max(0, Math.min(255, r));
+      g = Math.max(0, Math.min(255, g));
+      b = Math.max(0, Math.min(255, b));
+
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+  </script>
+
+</body>
+</html>
