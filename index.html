@@ -8,34 +8,51 @@
       font-family: sans-serif;
       background-color: #2f3241;
       color: #f0f0f0;
-      padding: 20px;
       margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
       transition: background-color 0.3s ease;
     }
 
-    .buttons {
-      margin-bottom: 20px;
+    .sidebar {
+      width: 160px;
+      background-color: #1e1f2a;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 10px;
+      gap: 10px;
     }
 
-    button {
+    .sidebar button {
       background-color: #3b3e4c;
       color: #fff;
       border: none;
-      padding: 10px 20px;
-      margin-right: 10px;
+      padding: 10px;
       border-radius: 4px;
       cursor: pointer;
       font-size: 16px;
       transition: background-color 0.3s ease;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    button:hover {
+    .sidebar button:hover {
       filter: brightness(0.9);
+    }
+
+    .main {
+      flex: 1;
+      padding: 20px;
+      overflow: hidden;
     }
 
     .screen {
       display: none;
       animation: fadeIn 0.3s ease-in;
+      height: 100%;
     }
 
     .screen.active {
@@ -44,7 +61,7 @@
 
     webview {
       width: 100%;
-      height: 600px;
+      height: 100%;
       border: none;
     }
 
@@ -79,11 +96,27 @@
       height: 30px;
       cursor: pointer;
     }
+
+    .default-btn {
+      background-color: #3b3e4c;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    .default-btn:hover {
+      filter: brightness(0.9);
+    }
   </style>
 </head>
 <body>
 
-  <div class="buttons" id="buttons">
+  <div class="sidebar" id="buttons">
     <button onclick="switchScreen('home')">Home</button>
     <button onclick="switchScreen('discord')">Discord</button>
     <button onclick="switchScreen('browser')">Browser</button>
@@ -91,45 +124,48 @@
     <button onclick="switchScreen('terminal')">Terminal</button>
   </div>
 
-  <div id="home" class="screen active">
-    <h1>Welcome</h1>
-    <p>This is your home screen. Select a section using the buttons above.</p>
-  </div>
+  <div class="main">
+    <div id="home" class="screen active">
+      <h1>Welcome</h1>
+      <p>This is your home screen. Select a section using the buttons on the left.</p>
+    </div>
 
-  <div id="discord" class="screen">
-    <webview
-      src="https://discord.com/app"
-      partition="persist:discord"
-      allowpopups
-      allowfullscreen
-      webpreferences="nativeWindowOpen=yes"
-    ></webview>
-  </div>
+    <div id="discord" class="screen">
+      <webview
+        src="https://discord.com/app"
+        partition="persist:discord"
+        allowpopups
+        allowfullscreen
+        webpreferences="nativeWindowOpen=yes"
+      ></webview>
+    </div>
 
-  <div id="browser" class="screen">
-    <webview
-      src="https://duckduckgo.com"
-      partition="persist:browser"
-      allowpopups
-    ></webview>
-  </div>
+    <div id="browser" class="screen">
+      <webview
+        src="https://duckduckgo.com"
+        partition="persist:browser"
+        allowpopups
+      ></webview>
+    </div>
 
-  <div id="spotify" class="screen">
-    <webview
-      src="https://open.spotify.com"
-      partition="persist:spotify"
-      allowpopups
-    ></webview>
-  </div>
+    <div id="spotify" class="screen">
+      <webview
+        src="https://open.spotify.com"
+        partition="persist:spotify"
+        allowpopups
+      ></webview>
+    </div>
 
-  <div id="terminal" class="screen">
-    <h1>Terminal coming soon (nodejs sucks)</h1>
+    <div id="terminal" class="screen">
+      <h1>Terminal coming soon (nodejs sucks)</h1>
+    </div>
   </div>
 
   <!-- Color Panel -->
   <div id="colorPanel">
     <label for="bgColor">Background</label>
     <input type="color" id="bgColor" value="#2f3241">
+    <button class="default-btn" onclick="resetDefaults()">Default</button>
   </div>
 
   <script>
@@ -146,13 +182,28 @@
       const bgColor = bgColorPicker.value;
       document.body.style.backgroundColor = bgColor;
 
-      const btnColor = adjustColor(bgColor, -20); // Slightly darker than background
+      const brightness = getBrightness(bgColor);
+      const btnColor = brightness > 200 ? '#000000' : adjustColor(bgColor, -20);
+
       document.querySelectorAll('button').forEach(btn => {
         btn.style.backgroundColor = btnColor;
+        btn.style.color = '#ffffff';
       });
     });
 
-    // Utility: Adjust brightness of a hex color
+    function resetDefaults() {
+      const defaultBg = '#2f3241';
+      const defaultBtn = '#3b3e4c';
+
+      document.body.style.backgroundColor = defaultBg;
+      bgColorPicker.value = defaultBg;
+
+      document.querySelectorAll('button').forEach(btn => {
+        btn.style.backgroundColor = defaultBtn;
+        btn.style.color = '#ffffff';
+      });
+    }
+
     function adjustColor(hex, amount) {
       let col = hex.startsWith('#') ? hex.slice(1) : hex;
       if (col.length === 3) col = col.split('').map(c => c + c).join('');
@@ -167,6 +218,17 @@
       b = Math.max(0, Math.min(255, b));
 
       return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    function getBrightness(hex) {
+      let col = hex.startsWith('#') ? hex.slice(1) : hex;
+      if (col.length === 3) col = col.split('').map(c => c + c).join('');
+
+      const r = parseInt(col.substr(0, 2), 16);
+      const g = parseInt(col.substr(2, 2), 16);
+      const b = parseInt(col.substr(4, 2), 16);
+
+      return 0.299 * r + 0.587 * g + 0.114 * b;
     }
   </script>
 

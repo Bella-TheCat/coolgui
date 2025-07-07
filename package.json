@@ -1,6 +1,6 @@
 {
-  "name": "dev",
-  "productName": "dev",
+  "name": "coolguithingy",
+  "productName": "coolguithingy",
   "description": "My Electron application description",
   "keywords": [],
   "main": "./main.js",
