@@ -1,25 +1,44 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow } = require('electron')
-const path = require('node:path')
+const { app, BrowserWindow, ipcMain } = require('electron');
+const path = require('path');
+const pty = require('node-pty');
 
-function createWindow () {
-  // Create the browser window.
-  mainWindow = new BrowserWindow({
-  width: 1000,
-  height: 800,
-  webPreferences: {
-    nodeIntegration: true,
-    contextIsolation: false,
-    webviewTag: true
-  }
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection:', reason);
 });
 
+function createWindow () {
+  const win = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      webviewTag: true,
+      preload: path.join(__dirname, 'preload.js')
+    },
+  });
 
   // and load the index.html of the app.
-  mainWindow.loadFile('index.html')
+  win.loadFile('index.html');
 
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  // Initialize shell
+  const shell = pty.spawn('cmd.exe', [], {
+    name: 'xterm-color',
+    cwd: process.cwd(),
+    env: process.env,
+  });
+
+  // Forward shell output to renderer
+  shell.onData(data => {
+    win.webContents.send('terminal-output', data);
+  });
+
+  // Receive keystrokes from renderer
+  ipcMain.on('terminal-input', (event, input) => {
+    console.log('User typed:', input); // Debug log
+    shell.write(input);
+  });
 }
 
 // This method will be called when Electron has finished

@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>coolgui</title>
+  <link rel="stylesheet" href="node_modules/@xterm/xterm/css/xterm.css">
+  <script src="node_modules/@xterm/xterm/lib/xterm.js"></script>
   <style>
     body {
       font-family: sans-serif;
@@ -15,6 +17,13 @@
       transition: background-color 0.3s ease;
     }
 
+    #terminal-container {
+      position: relative;
+      z-index: 1;
+      width: 100%; height: 100%;
+    }
+
+
     .sidebar {
       width: 160px;
       background-color: #1e1f2a;
@@ -22,7 +31,9 @@
       flex-direction: column;
       padding: 20px 10px;
       gap: 10px;
+      z-index: 10;
     }
+
 
     .sidebar button {
       background-color: #3b3e4c;
@@ -30,14 +41,14 @@
       border: none;
       padding: 10px;
       border-radius: 4px;
-      cursor: pointer;
       font-size: 16px;
-      transition: background-color 0.3s ease;
-      text-align: center;
+      transition: filter 0.3s ease;
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
     }
+
 
     .sidebar button:hover {
       filter: brightness(0.9);
@@ -46,24 +57,32 @@
     .main {
       flex: 1;
       padding: 20px;
+      position: relative;
       overflow: hidden;
     }
 
     .screen {
       display: none;
-      animation: fadeIn 0.3s ease-in;
-      height: 100%;
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      animation: fadeIn 0.3 ease-in;
     }
+
 
     .screen.active {
       display: block;
     }
 
+
     webview {
-      width: 100%;
-      height: 100%;
+      position: relative;
+      z-index: 0;
+      width: 100%; height: 100%;
       border: none;
+      pointer-events: auto;
     }
+
 
     @keyframes fadeIn {
       from { opacity: 0; }
@@ -111,7 +130,7 @@
     }
 
     .sidebar button {
-      background-color: #4c3b3b;
+      background-color: #3b3e4c;
     }
 
     .default-btn:hover {
@@ -150,20 +169,20 @@
       <webview
         src="https://duckduckgo.com"
         partition="persist:browser"
-        allowpopups
-      ></webview>
+        allowpopups>
+      </webview>
     </div>
 
     <div id="spotify" class="screen">
       <webview
         src="https://open.spotify.com"
         partition="persist:spotify"
-        allowpopups
-      ></webview>
+        allowpopups>
+      </webview>
     </div>
 
     <div id="terminal" class="screen">
-      <h1>Terminal coming soon (nodejs sucks)</h1>
+      <div id="terminal-container"></div>
     </div>
 
     <div id="settings" class="screen">
@@ -183,109 +202,126 @@
   <script>
     function switchScreen(id) {
       document.querySelectorAll('.screen').forEach(el => {
+        console.log('Hiding:', el.id);
         el.classList.remove('active');
       });
+      console.log('Showing:', id);
       document.getElementById(id).classList.add('active');
     }
 
-    const bgColorPicker = document.getElementById('bgColor');
-    const bgUpload      = document.getElementById('bgUpload');
 
-    bgColorPicker.addEventListener('input', () => {
-      const bgColor = bgColorPicker.value;
-      document.body.style.backgroundColor = bgColor;
+const bgColorPicker = document.getElementById('bgColor');
+  const bgUpload      = document.getElementById('bgUpload');
 
-      const brightness = getBrightness(bgColor);
-      const btnColor   = brightness > 200 ? '#000000' : adjustColor(bgColor, -20);
+  bgColorPicker.addEventListener('input', () => {
+    const bgColor = bgColorPicker.value;
+    document.body.style.backgroundColor = bgColor;
 
-      document.querySelectorAll('button').forEach(btn => {
-        btn.style.backgroundColor = btnColor;
-        btn.style.color           = '#ffffff';
-      });
+    const brightness = getBrightness(bgColor);
+    const btnColor = brightness > 200
+      ? '#000000'
+      : adjustColor(bgColor);
+
+    document.querySelectorAll('button').forEach(btn => {
+      btn.style.backgroundColor = btnColor;
+      btn.style.color           = '#ffffff';
     });
+  });
 
-    bgUpload.addEventListener('change', (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
+  bgUpload.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-      const url = URL.createObjectURL(file);
+    const url = URL.createObjectURL(file);
 
-      if (file.type.startsWith('image/')) {
-        document.body.style.backgroundImage    = `url(${url})`;
-        document.body.style.backgroundSize     = 'cover';
-        document.body.style.backgroundRepeat   = 'no-repeat';
-        document.body.style.backgroundPosition = 'center';
-      } else if (file.type.startsWith('video/')) {
-        let videoEl = document.getElementById('bgVideo');
-        if (!videoEl) {
-          videoEl = document.createElement('video');
-          videoEl.id       = 'bgVideo';
-          videoEl.autoplay = true;
-          videoEl.loop     = true;
-          videoEl.muted    = true;
-          Object.assign(videoEl.style, {
-            position: 'fixed',
-            top:      '0',
-            left:     '0',
-            width:    '100%',
-            height:   '100%',
-            objectFit:'cover',
-            zIndex:   '-1'
-          });
-          document.body.appendChild(videoEl);
-        }
-        videoEl.src = url;
+    if (file.type.startsWith('image/')) {
+      document.body.style.backgroundImage    = `url(${url})`;
+      document.body.style.backgroundSize     = 'cover';
+      document.body.style.backgroundRepeat   = 'no-repeat';
+      document.body.style.backgroundPosition = 'center';
+    } else if (file.type.startsWith('video/')) {
+      let videoEl = document.getElementById('bgVideo');
+      if (!videoEl) {
+        videoEl = document.createElement('video');
+        videoEl.id       = 'bgVideo';
+        videoEl.autoplay = true;
+        videoEl.loop     = true;
+        videoEl.muted    = true;
+        Object.assign(videoEl.style, {
+          position: 'fixed',
+          top:      '0',
+          left:     '0',
+          width:    '100%',
+          height:   '100%',
+          objectFit:'cover',
+          zIndex:   '-1'
+        });
+        document.body.appendChild(videoEl);
       }
+      videoEl.src = url;
+    }
+  });
+
+  function resetDefaults() {
+    const defaultBg  = '#2f3241';
+    const defaultBtn = '#3b3e4c';
+
+    document.body.style.backgroundColor = defaultBg;
+    document.body.style.backgroundImage = '';
+    bgColorPicker.value                = defaultBg;
+    clearCustomBackground();
+
+    document.querySelectorAll('button').forEach(btn => {
+      btn.style.backgroundColor = defaultBtn;
+      btn.style.color           = '#ffffff';
     });
+  }
 
-    function resetDefaults() {
-      const defaultBg  = '#2f3241';
-      const defaultBtn = '#3b3e4c';
+  function clearCustomBackground() {
+    document.body.style.backgroundImage = '';
+    const vid = document.getElementById('bgVideo');
+    if (vid) vid.remove();
+  }
 
-      document.body.style.backgroundColor = defaultBg;
-      document.body.style.backgroundImage = '';
-      bgColorPicker.value                = defaultBg;
-      clearCustomBackground();
+  // adds +12 to R, +12 to G, +11 to B (original offset)
+  function adjustColor(hex) {
+    let col = hex.startsWith('#')
+      ? hex.slice(1)
+      : hex;
 
-      document.querySelectorAll('button').forEach(btn => {
-        btn.style.backgroundColor = defaultBtn;
-        btn.style.color           = '#ffffff';
-      });
+    if (col.length === 3) {
+      col = col.split('').map(c => c + c).join('');
     }
 
-    function clearCustomBackground() {
-      document.body.style.backgroundImage = '';
-      const vid = document.getElementById('bgVideo');
-      if (vid) vid.remove();
+    const num = parseInt(col, 16);
+    let r     = (num >> 16)      + 12;
+    let g     = ((num >> 8) & 0xFF) + 12;
+    let b     = (num & 0xFF)     + 11;
+
+    // clamp to 0–255
+    r = Math.max(0, Math.min(255, r));
+    g = Math.max(0, Math.min(255, g));
+    b = Math.max(0, Math.min(255, b));
+
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  function getBrightness(hex) {
+    let col = hex.startsWith('#')
+      ? hex.slice(1)
+      : hex;
+
+    if (col.length === 3) {
+      col = col.split('').map(c => c + c).join('');
     }
 
-    function adjustColor(hex, amount) {
-      let col = hex.startsWith('#') ? hex.slice(1) : hex;
-      if (col.length === 3) col = col.split('').map(c => c + c).join('');
+    const r = parseInt(col.substr(0, 2), 16);
+    const g = parseInt(col.substr(2, 2), 16);
+    const b = parseInt(col.substr(4, 2), 16);
 
-      const num = parseInt(col, 16);
-      let r = (num >> 16) + amount;
-      let g = ((num >> 8) & 0xFF) + amount;
-      let b = (num & 0xFF) + amount;
-
-      r = Math.max(0, Math.min(255, r));
-      g = Math.max(0, Math.min(255, g));
-      b = Math.max(0, Math.min(255, b));
-
-      return `rgb(${r}, ${g}, ${b})`;
-    }
-
-    function getBrightness(hex) {
-      let col = hex.startsWith('#') ? hex.slice(1) : hex;
-      if (col.length === 3) col = col.split('').map(c => c + c).join('');
-
-      const r = parseInt(col.substr(0, 2), 16);
-      const g = parseInt(col.substr(2, 2), 16);
-      const b = parseInt(col.substr(4, 2), 16);
-
-      return 0.299 * r + 0.587 * g + 0.114 * b;
-    }
+    return 0.299 * r + 0.587 * g + 0.114 * b;
+  }
   </script>
-
+  <script src="renderer.js"></script>
 </body>
 </html>
