@@ -3,6 +3,8 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const pty = require('node-pty');
 
+icon: 'coolgui.ico'
+
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection:', reason);
 });
@@ -44,6 +46,7 @@ function createWindow () {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
+if (require('electron-squirrel-startup')) app.quit();
 app.whenReady().then(() => {
   createWindow()
 
