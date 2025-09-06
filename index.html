@@ -5,137 +5,11 @@
   <title>coolgui</title>
   <link rel="stylesheet" href="node_modules/@xterm/xterm/css/xterm.css">
   <script src="node_modules/@xterm/xterm/lib/xterm.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: sans-serif;
-      background-color: #2f3241;
-      color: #f0f0f0;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      height: 100vh;
-      transition: background-color 0.3s ease;
-    }
-
-    #terminal-container {
-      position: relative;
-      z-index: 1;
-      width: 100%; height: 100%;
-    }
-
-
-    .sidebar {
-      width: 160px;
-      background-color: #1e1f2a;
-      display: flex;
-      flex-direction: column;
-      padding: 20px 10px;
-      gap: 10px;
-      z-index: 10;
-    }
-
-
-    .sidebar button {
-      background-color: #3b3e4c;
-      color: #fff;
-      border: none;
-      padding: 10px;
-      border-radius: 4px;
-      font-size: 16px;
-      transition: filter 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-
-
-    .sidebar button:hover {
-      filter: brightness(0.9);
-    }
-
-    .main {
-      flex: 1;
-      padding: 20px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .screen {
-      display: none;
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      animation: fadeIn 0.3 ease-in;
-    }
-
-
-    .screen.active {
-      display: block;
-    }
-
-
-    webview {
-      position: relative;
-      z-index: 0;
-      width: 100%; height: 100%;
-      border: none;
-      pointer-events: auto;
-    }
-
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    #colorPanel {
-      position: fixed;
-      top: 20px;
-      left: 200px;
-      background: #1e1f2a;
-      border: 1px solid #444;
-      border-radius: 8px;
-      padding: 10px;
-      z-index: 999;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    }
-
-    #colorPanel label {
-      display: block;
-      font-size: 14px;
-      margin-bottom: 5px;
-      color: #ccc;
-    }
-
-    #colorPanel input[type="color"],
-    #colorPanel input[type="file"] {
-      width: 100%;
-      margin-bottom: 10px;
-      border: none;
-      height: 30px;
-      cursor: pointer;
-    }
-
-    .default-btn {
-      background-color: #3b3e4c;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      margin-top: 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s ease;
-    }
-
-    .sidebar button {
-      background-color: #3b3e4c;
-    }
-
-    .default-btn:hover {
-      filter: brightness(0.9);
-    }
   </style>
 </head>
 <body>
@@ -150,51 +24,52 @@
   </div>
 
   <div class="main">
-    <div id="home" class="screen active">
-      <h1>Welcome</h1>
-      <p>This is your home screen. Select a section using the buttons on the left.</p>
-    </div>
+    <div id="boxx">
+      <div id="home" class="screen active">
+        <h1>Welcome</h1>This is your home screen. Select a section using the buttons on the left.
+      </div>
 
-    <div id="discord" class="screen">
-      <webview
-        src="https://discord.com/app"
-        partition="persist:discord"
-        allowpopups
-        allowfullscreen
-        webpreferences="nativeWindowOpen=yes"
-      ></webview>
-    </div>
+      <div id="discord" class="screen">
+        <webview
+          src="https://discord.com/app"
+          partition="persist:discord"
+          allowpopups
+          allowfullscreen
+          webpreferences="nativeWindowOpen=yes"
+        ></webview>
+      </div>
 
-    <div id="browser" class="screen">
-      <webview
-        src="https://duckduckgo.com"
-        partition="persist:browser"
-        allowpopups>
-      </webview>
-    </div>
+      <div id="browser" class="screen">
+        <webview
+          src="https://duckduckgo.com"
+          partition="persist:browser"
+          allowpopups>
+        </webview>
+      </div>
 
-    <div id="spotify" class="screen">
-      <webview
-        src="https://open.spotify.com"
-        partition="persist:spotify"
-        allowpopups>
-      </webview>
-    </div>
+      <div id="spotify" class="screen">
+        <webview
+          src="https://open.spotify.com"
+          partition="persist:spotify"
+          allowpopups>
+        </webview>
+      </div>
 
-    <div id="terminal" class="screen">
-      <div id="terminal-container"></div>
-    </div>
+      <div id="terminal" class="screen">
+        <div id="terminal-container"></div>
+      </div>
 
-    <div id="settings" class="screen">
-      <div id="colorPanel">
-        <label for="bgColor">Background Color</label>
-        <input type="color" id="bgColor" value="#2f3241">
+      <div id="settings" class="screen">
+        <div id="colorPanel">
+          <!--<label for="bgColor">Background Color</label>
+          <input type="color" id="bgColor" value="#2f3241">-->
 
-        <label for="bgUpload">Custom Background</label>
-        <input type="file" id="bgUpload" accept="image/*,video/*,.webm,.mp4">
+          <label for="bgUpload">Custom Background</label>
+          <input type="file" id="bgUpload" accept="image/*,video/*,.webm,.mp4">
 
-        <button class="default-btn" onclick="resetDefaults()">Default</button>
-        <button class="default-btn" onclick="clearCustomBackground()">Clear Background</button>
+          <button class="default-btn" onclick="resetDefaults()">Default</button>
+          <button class="default-btn" onclick="clearCustomBackground()">Clear Background</button>
+        </div>
       </div>
     </div>
   </div>
@@ -210,10 +85,10 @@
     }
 
 
-const bgColorPicker = document.getElementById('bgColor');
+//const bgColorPicker = document.getElementById('bgColor');
   const bgUpload      = document.getElementById('bgUpload');
 
-  bgColorPicker.addEventListener('input', () => {
+  /*bgColorPicker.addEventListener('input', () => {
     const bgColor = bgColorPicker.value;
     document.body.style.backgroundColor = bgColor;
 
@@ -226,7 +101,7 @@ const bgColorPicker = document.getElementById('bgColor');
       btn.style.backgroundColor = btnColor;
       btn.style.color           = '#ffffff';
     });
-  });
+  });*/
 
   bgUpload.addEventListener('change', (event) => {
     const file = event.target.files[0];
@@ -264,11 +139,11 @@ const bgColorPicker = document.getElementById('bgColor');
 
   function resetDefaults() {
     const defaultBg  = '#2f3241';
-    const defaultBtn = '#3b3e4c';
+    // const defaultBtn = '#3b3e4c';
 
-    document.body.style.backgroundColor = defaultBg;
+    //document.body.style.backgroundColor = defaultBg;
     document.body.style.backgroundImage = '';
-    bgColorPicker.value                = defaultBg;
+    //bgColorPicker.value                = defaultBg;
     clearCustomBackground();
 
     document.querySelectorAll('button').forEach(btn => {
@@ -284,7 +159,7 @@ const bgColorPicker = document.getElementById('bgColor');
   }
 
   // adds +12 to R, +12 to G, +11 to B (original offset)
-  function adjustColor(hex) {
+  /* function adjustColor(hex) {
     let col = hex.startsWith('#')
       ? hex.slice(1)
       : hex;
@@ -304,7 +179,7 @@ const bgColorPicker = document.getElementById('bgColor');
     b = Math.max(0, Math.min(255, b));
 
     return `rgb(${r}, ${g}, ${b})`;
-  }
+  } */ 
 
   function getBrightness(hex) {
     let col = hex.startsWith('#')
